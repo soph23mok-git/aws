@@ -3,58 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EEG State Simulator</title>
+  <title>Flow EEG Companion</title>
   <style>
+    :root {
+      --bg: #f5eee4;
+      --surface: #fbf7f1;
+      --surface-strong: #ebe1d6;
+      --text: #2f2b26;
+      --muted: #7a6a58;
+      --accent: #b99d7f;
+      --accent-soft: #e7d6c2;
+      --shadow: 0 28px 60px rgba(63, 48, 30, 0.12);
+      --radius: 32px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, rgba(245, 238, 228, 0.95), transparent 35%), var(--bg);
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 760px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      line-height: 1.5;
+      padding: 32px 24px;
     }
-    h1 { margin-bottom: 0.5rem; }
-    button, select {
-      padding: 0.6rem 1rem;
-      margin: 0.5rem 0.25rem 1rem 0;
+
+    .page {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      margin-bottom: 38px;
+    }
+
+    .hero-copy {
+      padding: 42px;
+      background: var(--surface);
+      border: 1px solid rgba(156, 126, 94, 0.14);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(3rem, 3.8vw, 4.2rem);
+      line-height: 0.96;
+      font-family: "Georgia", "Times New Roman", serif;
+    }
+
+    p.lead {
+      margin: 26px 0 0;
+      max-width: 44rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.85;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 420px;
+      border-radius: 36px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(243, 233, 219, 1));
+      border: 1px solid rgba(156, 126, 94, 0.16);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      top: 18%;
+      right: -12%;
+      background: radial-gradient(circle, rgba(217, 183, 138, 0.48), transparent 60%);
+      filter: blur(24px);
+    }
+
+    .hero-visual::after {
+      content: "Flow";
+      position: absolute;
+      left: 24px;
+      bottom: 24px;
+      font-size: 2rem;
+      color: rgba(47, 43, 38, 0.14);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+    }
+
+    .hero-visual .content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px;
+      color: rgba(47, 43, 38, 0.75);
+    }
+
+    .hero-visual .content p {
+      max-width: 320px;
+      margin: 0 auto;
+      line-height: 1.8;
+    }
+
+    .panel {
+      padding: 30px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(156, 126, 94, 0.14);
+      border-radius: 32px;
+      box-shadow: 0 18px 36px rgba(70, 56, 39, 0.08);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 1rem 1.6rem;
       font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    #output {
-      white-space: pre-wrap;
-      background: #f7f7f7;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-top: 1rem;
+
+    button.primary {
+      background: linear-gradient(135deg, #a77d56 0%, #d5b48c 100%);
+      color: #fff;
+      box-shadow: 0 18px 30px rgba(167, 125, 86, 0.24);
     }
-    .sample-title {
-      margin: 1rem 0 0.25rem;
+
+    button.secondary {
+      background: rgba(255,255,255,0.94);
+      color: var(--text);
+      border: 1px solid rgba(156, 126, 94, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button.primary:hover {
+      box-shadow: 0 22px 36px rgba(167, 125, 86, 0.32);
+    }
+
+    .output-card {
+      display: grid;
+      gap: 18px;
+      margin-top: 10px;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid rgba(156, 126, 94, 0.12);
+      border-radius: 28px;
+      box-shadow: 0 20px 40px rgba(70, 56, 39, 0.08);
+    }
+
+    .output-card h2 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .state-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      background: rgba(185, 157, 127, 0.16);
+      color: #5a4a3d;
       font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 14px;
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: 1fr 88px;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .metric-name {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .metric-value {
+      font-weight: 700;
+      text-align: right;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .recommendation {
+      padding: 20px;
+      border-radius: 24px;
+      background: rgba(217, 183, 138, 0.14);
+      color: #4d3f31;
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .hero-visual {
+        min-height: 280px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .metric-row {
+        grid-template-columns: 1fr;
+      }
+      .metric-value {
+        text-align: left;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>EEG State Simulator</h1>
-  <p>
-    Simulate EEG band-power fractions, classify the brain state, and get a music recommendation.
-  </p>
+  <div class="page">
+    <section class="hero">
+      <article class="hero-copy">
+        <div class="eyebrow">Flow EEG Companion</div>
+        <h1>Invisible insight. Effortless calm.</h1>
+        <p class="lead">
+          Retrieve sensor-derived brain data, discover your current state, and receive a tailored music modulation recommendation.
+        </p>
+      </article>
 
-  <div>
-    <button id="btn-all">Simulate All States</button>
-    <button id="btn-random">Simulate Random Sample</button>
-    <label>
-      State:
-      <select id="state-select">
-        <option value="Optimal">Optimal</option>
-        <option value="Drifting">Drifting</option>
-        <option value="Drowsy">Drowsy</option>
-        <option value="Overload">Overload</option>
-        <option value="Stress">Stress</option>
-      </select>
-    </label>
-    <button id="btn-one">Simulate Selected State</button>
+      <section class="hero-visual">
+        <div class="content">
+          <div>
+            <p style="font-size: 0.95rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1rem; color: #7f6c5d;">
+              Wearable sensor simulator
+            </p>
+            <p>
+              One touch generates EEG-style alpha, beta, and gamma bands with a state classification and music guidance built in.
+            </p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel">
+      <div class="actions">
+        <button class="primary" id="retrieve-btn">Retrieve your brain data</button>
+        <button class="secondary" id="spotify-btn">Connect to Spotify</button>
+      </div>
+
+      <div id="output" class="output-card">
+        <h2>Your brain data will appear here</h2>
+        <p class="hint">
+          Press “Retrieve your brain data” to generate a simulated alpha/beta/gamma profile, then see your inferred state and the recommended music modulation.
+        </p>
+      </div>
+    </section>
   </div>
-
-  <div id="output"></div>
 
   <script>
     const STATE_RECOMMENDATIONS = {
@@ -66,111 +312,93 @@
       Unknown: "Play balanced ambient music and collect more data before selecting a stronger intervention."
     };
 
-    const TARGET_STATES = ["Optimal", "Drifting", "Drowsy", "Overload", "Stress"];
-
     function normalize(values) {
-      const total = values.reduce((sum, v) => sum + v, 0);
-      return values.map(v => v / total);
+      const total = values.reduce((sum, value) => sum + value, 0);
+      return values.map(value => value / total);
     }
 
-    function classifyBrainState(sample) {
+    function simulateBrainData() {
+      const raw = [
+        Math.random() * 0.55 + 0.10,
+        Math.random() * 0.55 + 0.10,
+        Math.random() * 0.55 + 0.10,
+        Math.random() * 0.55 + 0.10
+      ];
+      const [alpha, beta, gamma, theta] = normalize(raw);
+      return { alpha, beta, gamma, theta };
+    }
+
+    function classifyState(sample) {
       const { theta, alpha, beta } = sample;
       const ratio = alpha / theta;
 
-      if (theta > 0.35 && alpha < 0.20 && beta < 0.15 && ratio < 0.6) {
-        return "Drowsy";
-      }
-      if (theta >= 0.20 && theta <= 0.30 && alpha < 0.20 && beta > 0.35 && ratio < 0.9) {
-        return "Stress";
-      }
-      if (theta >= 0.30 && theta <= 0.45 && alpha < 0.25 && beta >= 0.25 && beta <= 0.35 && ratio < 0.9) {
-        return "Overload";
-      }
-      if (theta >= 0.25 && theta <= 0.35 && alpha >= 0.30 && alpha <= 0.45 && beta >= 0.15 && beta <= 0.25 && ratio > 1.4) {
-        return "Drifting";
-      }
+      if (theta > 0.35 && alpha < 0.20 && beta < 0.15 && ratio < 0.6) return "Drowsy";
+      if (theta >= 0.20 && theta <= 0.30 && alpha < 0.20 && beta > 0.35 && ratio < 0.9) return "Stress";
+      if (theta >= 0.30 && theta <= 0.45 && alpha < 0.25 && beta >= 0.25 && beta <= 0.35 && ratio < 0.9) return "Overload";
+      if (theta >= 0.25 && theta <= 0.35 && alpha >= 0.30 && alpha <= 0.45 && beta >= 0.15 && beta <= 0.25 && ratio > 1.4) return "Drifting";
       if (
         theta >= 0.15 && theta <= 0.25 &&
         alpha >= 0.15 && alpha <= 0.30 &&
         beta >= 0.25 && beta <= 0.40 &&
         ratio >= 0.8 && ratio <= 1.5
-      ) {
-        return "Optimal";
-      }
+      ) return "Optimal";
+
       return "Unknown";
     }
 
-    function formatSample(sample) {
-      return `theta=${sample.theta.toFixed(3)}, alpha=${sample.alpha.toFixed(3)}, beta=${sample.beta.toFixed(3)}, alpha/theta=${(sample.alpha / sample.theta).toFixed(3)}`;
+    function formatPercent(value) {
+      return `${(value * 100).toFixed(1)}%`;
     }
 
-    function simulateRandomEEG() {
-      const raw = [
-        Math.random() * 0.95 + 0.05,
-        Math.random() * 0.95 + 0.05,
-        Math.random() * 0.95 + 0.05
-      ];
-      const [theta, alpha, beta] = normalize(raw);
-      return { theta, alpha, beta };
-    }
-
-    function generateIntentionalSample(targetState, attempts = 2000) {
-      for (let i = 0; i < attempts; i++) {
-        const raw = [
-          Math.random() * 0.5 + 0.05,
-          Math.random() * 0.5 + 0.05,
-          Math.random() * 0.5 + 0.05
-        ];
-        const [theta, alpha, beta] = normalize(raw);
-        const sample = { theta, alpha, beta };
-        if (classifyBrainState(sample) === targetState) {
-          return sample;
-        }
-      }
-
-      const fallback = {
-        Optimal: { theta: 0.20, alpha: 0.22, beta: 0.35 },
-        Drifting: { theta: 0.26, alpha: 0.40, beta: 0.19 },
-        Drowsy: { theta: 0.40, alpha: 0.15, beta: 0.10 },
-        Overload: { theta: 0.35, alpha: 0.20, beta: 0.30 },
-        Stress: { theta: 0.25, alpha: 0.15, beta: 0.40 }
-      };
-      return fallback[targetState];
-    }
-
-    function getMusicRecommendation(state) {
-      return STATE_RECOMMENDATIONS[state] || STATE_RECOMMENDATIONS.Unknown;
-    }
-
-    function renderResult(title, sample, state, recommendation) {
+    function createMetricRow(name, value) {
       return `
-<strong class="sample-title">${title}</strong>
-${formatSample(sample)}
-State: ${state}
-Recommendation: ${recommendation}
-`;
+        <div class="metric-row">
+          <div class="metric-name">${name}</div>
+          <div class="metric-value">${formatPercent(value)}</div>
+        </div>
+      `;
     }
 
     const output = document.getElementById("output");
-    document.getElementById("btn-all").onclick = () => {
-      output.innerHTML = TARGET_STATES.map(state => {
-        const sample = generateIntentionalSample(state);
-        const recommendation = getMusicRecommendation(state);
-        return renderResult(state, sample, state, recommendation);
-      }).join("\n");
-    };
+    const retrieveBtn = document.getElementById("retrieve-btn");
+    const spotifyBtn = document.getElementById("spotify-btn");
 
-    document.getElementById("btn-random").onclick = () => {
-      const sample = simulateRandomEEG();
-      const state = classifyBrainState(sample);
-      output.innerHTML = renderResult("Random sample", sample, state, getMusicRecommendation(state));
-    };
+    function renderSample(sample, state) {
+      return `
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+            <div>
+              <h2>Brain state: <span class="state-pill">${state}</span></h2>
+            </div>
+          </div>
 
-    document.getElementById("btn-one").onclick = () => {
-      const state = document.getElementById("state-select").value;
-      const sample = generateIntentionalSample(state);
-      output.innerHTML = renderResult(state, sample, state, getMusicRecommendation(state));
-    };
+          <div class="metrics">
+            ${createMetricRow("Alpha", sample.alpha)}
+            ${createMetricRow("Beta", sample.beta)}
+            ${createMetricRow("Gamma", sample.gamma)}
+          </div>
+
+          <div class="recommendation">
+            <strong>Recommendation</strong>
+            <p style="margin: 0.75rem 0 0;">
+              ${STATE_RECOMMENDATIONS[state] || STATE_RECOMMENDATIONS.Unknown}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    retrieveBtn.addEventListener("click", () => {
+      const sample = simulateBrainData();
+      const state = classifyState(sample);
+
+      output.innerHTML = renderSample(sample, state);
+      spotifyBtn.disabled = false;
+    });
+
+    spotifyBtn.addEventListener("click", () => {
+      window.open("https://open.spotify.com", "_blank");
+    });
   </script>
 </body>
 </html>
